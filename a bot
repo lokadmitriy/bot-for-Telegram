@@ -1,0 +1,40 @@
+import telebot
+import cv2
+import numpy as np
+import io
+
+# Replace 'YOUR_TELEGRAM_BOT_TOKEN' with your actual Telegram bot token
+bot = telebot.TeleBot('YOUR_TELEGRAM_BOT_TOKEN')
+
+@bot.message_handler(content_types=['photo'])
+def cut_out_object(message):
+    # Get the photo from the message
+    photo = message.photo[-1]
+
+    # Download the photo
+    file_info = bot.get_file(photo.file_id)
+    downloaded_file = bot.download_file(file_info.file_path)
+
+    # Load the photo using OpenCV
+    nparr = np.frombuffer(downloaded_file, np.uint8)
+    image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply object detection or segmentation algorithm to identify the object
+    # You can use techniques like template matching, contour detection, or machine learning-based methods here
+
+    # Cut out the object from the original image
+    # You can use techniques like cropping or masking based on the identified object's region
+
+    # Processed image is saved to a byte stream
+    processed_image_stream = io.BytesIO()
+    cv2.imwrite('processed_image.jpg', image)  # Save the processed image as 'processed_image.jpg'
+    processed_image_stream.seek(0)
+
+    # Send the processed image back to the user
+    bot.send_photo(message.chat.id, processed_image_stream)
+
+# Start the bot
+bot.polling()
